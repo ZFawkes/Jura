@@ -1,0 +1,6 @@
+---
+#Spring
+spring:
+  main:
+    web-application-type: none
+---
