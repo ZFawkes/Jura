@@ -67,4 +67,20 @@ public class RoleHelper {
             }
         }
     }
+
+    public static void addStreamingRoleToStreamingMembers(JDA jda, String channelId) {
+        String streamingRoleId = System.getenv().get(CURRENT_STREAMING_ROLE_ID_PROPERTY_NAME);
+
+        if (streamingRoleId != null && !streamingRoleId.isEmpty()) {
+            Guild guild = jda.getTextChannelById(channelId).getGuild();
+            List<Member> members = guild.getMembers();
+            Role streamingRole = guild.getRoleById(streamingRoleId);
+
+            for (Member member : members) {
+                if (member.getVoiceState().isStream()) {
+                    RoleHelper.addRole(streamingRole, member, guild);
+                }
+            }
+        }
+    }
 }
