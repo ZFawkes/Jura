@@ -6,16 +6,17 @@ import java.awt.Color;
 import java.util.HashSet;
 import java.util.Set;
 
+import dev.fawkes.jura.helpers.RoleHelper;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceStreamEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
-import static dev.fawkes.jura.FawkesApplicationRunner.NOTIFICATION_CHANNEL_ID_PROPERTY_NAME;
-import static dev.fawkes.jura.FawkesApplicationRunner.NOTIFICATION_ROLE_MENTION_ID_PROPERTY_NAME;
+import static dev.fawkes.jura.FawkesApplicationRunner.*;
 
 /**
  * Listens for & reacts to discord "Go live" events;
@@ -40,21 +41,31 @@ public class DiscordStreamListener extends ListenerAdapter {
     public void onGuildVoiceStream(@Nonnull GuildVoiceStreamEvent event) {
         log.info("Voice stream event - user:{}, streaming:{}, responseID:{}", event.getMember().getEffectiveName(), event.isStream(), event.getResponseNumber());
 
-        TextChannel channel = event.getGuild().getTextChannelById(this.streamNotificationChannelID);
+        Guild guild = event.getGuild();
+
+        TextChannel channel = guild.getTextChannelById(this.streamNotificationChannelID);
         if (channel != null) {
             if (event.isStream()) {
                 MessageEmbed embedMessage = getDiscordStreamStartedMessage(event.getMember().getUser(), ":loud_sound: " + event.getVoiceState().getChannel().getName());
+
                 Message message = new MessageBuilder()
-                        .append( event.getGuild().getRoleById(this.streamNotificationMentionID).getAsMention())
+                        .append( guild.getRoleById(this.streamNotificationMentionID).getAsMention())
                         .append(" - ")
                         .append(event.getMember().getEffectiveName())
                         .append(" is now streaming on Discord")
                         .build();
+
                 channel.sendMessage(message).embed(embedMessage).complete();
+
+                RoleHelper.addRole(CURRENT_STREAMING_ROLE_ID_PROPERTY_NAME, event.getMember(), event.getGuild());
+
                 this.streamers.add(event.getMember().getId());
             } else if (this.streamers.contains(event.getMember().getId())) {
                 MessageEmbed embedMessage = getDiscordStreamEndedMessage(event.getMember().getEffectiveName());
                 channel.sendMessage(embedMessage).complete();
+
+                RoleHelper.removeRole(CURRENT_STREAMING_ROLE_ID_PROPERTY_NAME, event.getMember(), event.getGuild());
+
                 this.streamers.remove(event.getMember().getId());
             }
         }
@@ -72,6 +83,9 @@ public class DiscordStreamListener extends ListenerAdapter {
         if (member.getVoiceState().isStream()) {
             MessageEmbed embedMessage = getDiscordStreamEndedMessage(member.getEffectiveName());
             event.getJDA().getTextChannelById(streamNotificationChannelID).sendMessage(embedMessage).complete();
+
+            RoleHelper.removeRole(CURRENT_STREAMING_ROLE_ID_PROPERTY_NAME, member, member.getGuild());
+
             this.streamers.remove(member.getId());
         }
     }
