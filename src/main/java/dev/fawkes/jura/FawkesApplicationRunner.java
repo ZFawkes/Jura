@@ -22,6 +22,7 @@ public class FawkesApplicationRunner implements ApplicationRunner {
      */
     public static final String NOTIFICATION_CHANNEL_ID_PROPERTY_NAME = "fawkes.discord.notify.channel";
     public static final String NOTIFICATION_ROLE_MENTION_ID_PROPERTY_NAME  = "fawkes.discord.notify.role";
+    public static final String CURRENT_STREAMING_ROLE_ID_PROPERTY_NAME = "fawkes.discord.streaming.role";
     private static final String DISCORD_BOT_TOKEN_PROPERTY_NAME = "fawkes.discord.token";
     private static final String DEV_CHANNEL_PROP_NAME = "fawkes.discord.dev.channel";
 
