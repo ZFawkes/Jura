@@ -41,7 +41,7 @@ public class DiscordStreamListener extends ListenerAdapter {
 
         String role = System.getenv().get(CURRENT_STREAMING_ROLE_ID_PROPERTY_NAME);
         if (role != null && !role.isEmpty()) {
-            this.streamingRoleID = System.getenv().get(CURRENT_STREAMING_ROLE_ID_PROPERTY_NAME);
+            this.streamingRoleID = role;
         } else {
             this.streamingRoleID = null;
         }
@@ -80,7 +80,7 @@ public class DiscordStreamListener extends ListenerAdapter {
                 channel.sendMessage(embedMessage).complete();
 
                 if (this.streamingRoleID != null) {
-                    RoleHelper.addRole(this.streamingRole, event.getMember(), event.getGuild());
+                    RoleHelper.removeRole(this.streamingRole, event.getMember(), event.getGuild());
                 }
 
                 this.streamers.remove(event.getMember().getId());
@@ -114,7 +114,7 @@ public class DiscordStreamListener extends ListenerAdapter {
     @Override
     public void onGuildVoiceLeave(@Nonnull GuildVoiceLeaveEvent event) {
         if (this.streamingRoleID != null) {
-            RoleHelper.addRole(this.streamingRole, event.getMember(), event.getGuild());
+            RoleHelper.removeRole(this.streamingRole, event.getMember(), event.getGuild());
         }
     }
 
