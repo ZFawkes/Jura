@@ -2,6 +2,7 @@ package dev.fawkes.jura.dev;
 
 import java.awt.*;
 
+import dev.fawkes.jura.helpers.RoleHelper;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
@@ -28,8 +29,10 @@ public class ShutdownTask extends Thread {
         embedBuilder.setThumbnail(this.jda.getSelfUser().getAvatarUrl());
         embedBuilder.setColor(new Color(10, 200, 10));
 
+        RoleHelper.removeStreamingRoleFromAllMembers(this.jda, this.devChannelID);
+
         // Sync send message then shutdown.
-        this.jda.getTextChannelById(devChannelID).sendMessage(embedBuilder.build()).complete();
+        this.jda.getTextChannelById(this.devChannelID).sendMessage(embedBuilder.build()).complete();
         this.jda.shutdown();
 
         log.info("Done ping discord before Shutting down");
