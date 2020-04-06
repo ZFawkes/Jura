@@ -33,12 +33,18 @@ public class DiscordStreamListener extends ListenerAdapter {
     private final String streamNotificationMentionID;
     private final String streamingRoleID;
 
-    private Role streamingRole;
+    private Role streamingRole = null;
 
     public DiscordStreamListener() {
         this.streamNotificationChannelID = System.getenv().get(NOTIFICATION_CHANNEL_ID_PROPERTY_NAME);
         this.streamNotificationMentionID = System.getenv().get(NOTIFICATION_ROLE_MENTION_ID_PROPERTY_NAME);
-        this.streamingRoleID = System.getenv().get(CURRENT_STREAMING_ROLE_ID_PROPERTY_NAME);
+
+        String role = System.getenv().get(CURRENT_STREAMING_ROLE_ID_PROPERTY_NAME);
+        if (role != null && !role.isEmpty()) {
+            this.streamingRoleID = System.getenv().get(CURRENT_STREAMING_ROLE_ID_PROPERTY_NAME);
+        } else {
+            this.streamingRoleID = null;
+        }
     }
 
     @Override
@@ -46,7 +52,9 @@ public class DiscordStreamListener extends ListenerAdapter {
         log.info("Voice stream event - user:{}, streaming:{}, responseID:{}", event.getMember().getEffectiveName(), event.isStream(), event.getResponseNumber());
 
         Guild guild = event.getGuild();
-        this.streamingRole = guild.getRoleById(this.streamingRoleID);
+        if (this.streamingRoleID != null) {
+            this.streamingRole = guild.getRoleById(this.streamingRoleID);
+        }
 
         TextChannel channel = guild.getTextChannelById(this.streamNotificationChannelID);
         if (channel != null) {
@@ -61,13 +69,20 @@ public class DiscordStreamListener extends ListenerAdapter {
                         .build();
 
                 channel.sendMessage(message).embed(embedMessage).complete();
-                RoleHelper.addRole(this.streamingRole, event.getMember(), event.getGuild());
+
+                if (this.streamingRoleID != null) {
+                    RoleHelper.addRole(this.streamingRole, event.getMember(), event.getGuild());
+                }
 
                 this.streamers.add(event.getMember().getId());
             } else if (this.streamers.contains(event.getMember().getId())) {
                 MessageEmbed embedMessage = getDiscordStreamEndedMessage(event.getMember().getEffectiveName());
                 channel.sendMessage(embedMessage).complete();
-                RoleHelper.removeRole(this.streamingRole, event.getMember(), event.getGuild());
+
+                if (this.streamingRoleID != null) {
+                    RoleHelper.addRole(this.streamingRole, event.getMember(), event.getGuild());
+                }
+
                 this.streamers.remove(event.getMember().getId());
             }
         }
@@ -85,7 +100,9 @@ public class DiscordStreamListener extends ListenerAdapter {
         if (member.getVoiceState().isStream()) {
             MessageEmbed embedMessage = getDiscordStreamEndedMessage(member.getEffectiveName());
             event.getJDA().getTextChannelById(streamNotificationChannelID).sendMessage(embedMessage).complete();
-            RoleHelper.removeRole(this.streamingRole, member, member.getGuild());
+            if (this.streamingRoleID != null) {
+                RoleHelper.removeRole(this.streamingRole, member, member.getGuild());
+            }
             this.streamers.remove(member.getId());
         }
     }
@@ -96,7 +113,9 @@ public class DiscordStreamListener extends ListenerAdapter {
      */
     @Override
     public void onGuildVoiceLeave(@Nonnull GuildVoiceLeaveEvent event) {
-        RoleHelper.removeRole(this.streamingRole, event.getMember(), event.getGuild());
+        if (this.streamingRoleID != null) {
+            RoleHelper.addRole(this.streamingRole, event.getMember(), event.getGuild());
+        }
     }
 
     private static MessageEmbed getDiscordStreamStartedMessage(User user, String channel) {
