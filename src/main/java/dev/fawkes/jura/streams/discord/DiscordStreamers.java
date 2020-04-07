@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Holds the collection of current streamers.
  */
+//TODO create a startup (recurring?) task to populate the streamers.
 public class DiscordStreamers {
 
     private ConcurrentHashMap<Long, DiscordStreamer> streamers = new ConcurrentHashMap<>();

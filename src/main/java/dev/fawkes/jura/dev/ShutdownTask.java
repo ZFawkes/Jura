@@ -30,6 +30,7 @@ public class ShutdownTask extends Thread {
         embedBuilder.setThumbnail(this.jda.getSelfUser().getAvatarUrl());
         embedBuilder.setColor(new Color(10, 200, 10));
 
+        // TODO move to its own shutdown hook.
         RoleHelper.removeStreamingRoleFromAllMembers(this.jda, this.devChannelID);
 
         // Sync send message then shutdown.

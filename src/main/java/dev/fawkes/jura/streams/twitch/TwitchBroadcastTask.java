@@ -33,6 +33,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import static dev.fawkes.jura.streams.Streams.NOTIFICATION_CHANNEL_ID_PROPERTY_NAME;
 import static dev.fawkes.jura.streams.Streams.NOTIFICATION_ROLE_MENTION_ID_PROPERTY_NAME;
 
+// TODO refactor to similar manor as Discord streams.
 @Slf4j
 public class TwitchBroadcastTask extends TimerTask {
 

@@ -50,6 +50,7 @@ public class FawkesApplicationRunner implements ApplicationRunner {
                 .build();
         jda.awaitReady();
 
+        // TODO determine a better way to instantiate the event listeners.
         // Generate event listeners
         DiscordStreamers discordStreamers = new DiscordStreamers();
         DiscordStreamsNotifier discordStreamsNotifier = new DiscordStreamsNotifier(jda, discordStreamers);
@@ -60,6 +61,7 @@ public class FawkesApplicationRunner implements ApplicationRunner {
 
         Runtime.getRuntime().addShutdownHook(new ShutdownTask(jda, System.getenv().get(DEV_CHANNEL_PROP_NAME)));
 
+        // TODO refactor all startup tasks to a common format.
         // Run twitch task every 30s (first run now.)
         Timer tasksTimer = new Timer();
         tasksTimer.schedule(new TwitchBroadcastTask(jda), 1, 30*1000);

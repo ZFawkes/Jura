@@ -7,6 +7,8 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 
+
+// TODO between the new listeners and sorting out the start / shutdown tasks this should be able to be removed.
 public class RoleHelper {
 
     private static final String CURRENT_STREAMING_ROLE_ID_PROPERTY_NAME = "fawkes.discord.streaming.role";
