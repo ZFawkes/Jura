@@ -7,7 +7,7 @@ import dev.fawkes.jura.helpers.RoleHelper;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 
-public class StartupTask {
+public class DevStartupTask {
 
     public static void sendReadyNotification(JDA jda, String devChannelID) {
         EmbedBuilder embedBuilder = new EmbedBuilder();

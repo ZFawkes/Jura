@@ -7,16 +7,17 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 
-import static dev.fawkes.jura.FawkesApplicationRunner.CURRENT_STREAMING_ROLE_ID_PROPERTY_NAME;
-
 public class RoleHelper {
+
+    private static final String CURRENT_STREAMING_ROLE_ID_PROPERTY_NAME = "fawkes.discord.streaming.role";
+
     /**
      * Add a role to a member as long as the user doesn't already has this role.
      * @param env The roleId of the role to add to the member.
      * @param member The member the role has to be added on.
      * @param guild The guild the member is in.
      */
-    public static void addRole(String env, Member member, Guild guild) {
+    private static void addRole(String env, Member member, Guild guild) {
         String roleId = System.getenv().get(env);
 
         if (roleId != null && !roleId.isEmpty()) {
@@ -45,7 +46,7 @@ public class RoleHelper {
      * @param member The member to remove the role from.
      * @param guild The guild the member is in.
      */
-    public static void removeRole(String env, Member member, Guild guild) {
+    private static void removeRole(String env, Member member, Guild guild) {
         String roleId = System.getenv().get(env);
 
         if (roleId != null && !roleId.isEmpty()) {
