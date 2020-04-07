@@ -1,8 +1,9 @@
 package dev.fawkes.jura.dev;
 
-import java.awt.*;
+import java.awt.Color;
 
 import dev.fawkes.jura.helpers.RoleHelper;
+
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 

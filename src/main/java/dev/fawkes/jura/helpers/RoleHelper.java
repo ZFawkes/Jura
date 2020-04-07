@@ -1,11 +1,11 @@
 package dev.fawkes.jura.helpers;
 
+import java.util.List;
+
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
-
-import java.util.List;
 
 import static dev.fawkes.jura.FawkesApplicationRunner.CURRENT_STREAMING_ROLE_ID_PROPERTY_NAME;
 

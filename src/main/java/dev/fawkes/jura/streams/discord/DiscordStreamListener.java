@@ -1,22 +1,28 @@
 package dev.fawkes.jura.streams.discord;
 
-import javax.annotation.Nonnull;
-
 import java.awt.Color;
 import java.util.HashSet;
 import java.util.Set;
+import javax.annotation.Nonnull;
 
 import dev.fawkes.jura.helpers.RoleHelper;
+
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.MessageBuilder;
-import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceStreamEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
-import static dev.fawkes.jura.FawkesApplicationRunner.*;
+import static dev.fawkes.jura.FawkesApplicationRunner.CURRENT_STREAMING_ROLE_ID_PROPERTY_NAME;
+import static dev.fawkes.jura.FawkesApplicationRunner.NOTIFICATION_CHANNEL_ID_PROPERTY_NAME;
+import static dev.fawkes.jura.FawkesApplicationRunner.NOTIFICATION_ROLE_MENTION_ID_PROPERTY_NAME;
 
 /**
  * Listens for & reacts to discord "Go live" events;

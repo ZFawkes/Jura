@@ -6,8 +6,12 @@ import dev.fawkes.jura.dev.ShutdownTask;
 import dev.fawkes.jura.dev.StartupTask;
 import dev.fawkes.jura.streams.discord.DiscordStreamListener;
 import dev.fawkes.jura.streams.twitch.TwitchBroadcastTask;
+
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.*;
+import net.dv8tion.jda.api.AccountType;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
