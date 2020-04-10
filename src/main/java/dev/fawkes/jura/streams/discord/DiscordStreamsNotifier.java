@@ -2,6 +2,7 @@ package dev.fawkes.jura.streams.discord;
 
 import java.awt.Color;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
@@ -20,8 +21,9 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
     private final TextChannel streamNotificationChannel;
     private final String streamNotificationMention;
     private final JDA jda;
+    private final AtomicReference<Boolean> ready;
 
-    public DiscordStreamsNotifier(JDA jda) {
+    public DiscordStreamsNotifier(JDA jda, AtomicReference<Boolean> ready) {
         this.jda = jda;
         Role streamMentionRole = jda.getRoleById(System.getenv().get(NOTIFICATION_ROLE_MENTION_ID_PROPERTY_NAME));
         if (streamMentionRole == null) {
@@ -32,36 +34,41 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
         if (this.streamNotificationChannel == null) {
             throw new IllegalStateException("Could not get stream notification channel.");
         }
+        this.ready = ready;
     }
 
     @Override
     public void onStreamStart(DiscordStreamer streamer) {
-        User user = this.jda.getUserById(streamer.getUserID());
-        MessageEmbed embedMessage = getDiscordStreamStartedMessage(user, ":loud_sound: " + streamer.getStreamChannelName());
+        if (this.ready.get()) {
+            User user = this.jda.getUserById(streamer.getUserID());
+            MessageEmbed embedMessage = getDiscordStreamStartedMessage(user, ":loud_sound: " + streamer.getStreamChannelName());
 
-        Message message = new MessageBuilder()
-                .append(this.streamNotificationMention)
-                .append(" - ")
-                .append(user.getName())
-                .append(" is now streaming on Discord")
-                .build();
+            Message message = new MessageBuilder()
+                    .append(this.streamNotificationMention)
+                    .append(" - ")
+                    .append(user.getName())
+                    .append(" is now streaming on Discord")
+                    .build();
 
-        Message result = this.streamNotificationChannel.sendMessage(message).embed(embedMessage).complete();
-        streamer.setStreamStartMessageID(result.getIdLong());
+            Message result = this.streamNotificationChannel.sendMessage(message).embed(embedMessage).complete();
+            streamer.setStreamStartMessageID(result.getIdLong());
+        }
     }
 
     @Override
     public void onStreamEnd(DiscordStreamer streamer) {
-        String user = this.jda.getUserById(streamer.getUserID()).getName();
-        String streamDuration;
-        if (streamer.getStreamStartTime() != null ) {
-            streamDuration = streamDuration(System.currentTimeMillis() - streamer.getStreamStartTime());
-        } else {
-            streamDuration = "Oh sh!t: Here there be dragons.";
-        }
+        if (this.ready.get()) {
+            String user = this.jda.getUserById(streamer.getUserID()).getName();
+            String streamDuration;
+            if (streamer.getStreamStartTime() != null ) {
+                streamDuration = streamDuration(System.currentTimeMillis() - streamer.getStreamStartTime());
+            } else {
+                streamDuration = "Oh sh!t: Here there be dragons.";
+            }
 
-        MessageEmbed embedMessage = getDiscordStreamEndedMessage(user, streamDuration);
-        this.streamNotificationChannel.sendMessage(embedMessage).complete();
+            MessageEmbed embedMessage = getDiscordStreamEndedMessage(user, streamDuration);
+            this.streamNotificationChannel.sendMessage(embedMessage).complete();
+        }
     }
 
 

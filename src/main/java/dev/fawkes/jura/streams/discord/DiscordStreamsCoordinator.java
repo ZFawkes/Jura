@@ -9,8 +9,6 @@ import net.dv8tion.jda.api.entities.Member;
 
 public class DiscordStreamsCoordinator {
 
-    private static AtomicBoolean init = new AtomicBoolean(false);
-
     private final JDA jda;
     private DiscordStreamers discordStreamers;
 
@@ -20,33 +18,18 @@ public class DiscordStreamsCoordinator {
     }
 
     public void setStreamers() {
-        Set<Long> trackedStreamers = this.discordStreamers.getStreamers().keySet();
-
         for (Guild guild : this.jda.getGuilds()) {
             for (Member member : guild.getMembers()) {
+                DiscordStreamer discordStreamer = new DiscordStreamer();
+                discordStreamer.setGuildID(guild.getIdLong());
+                discordStreamer.setUserID(member.getIdLong());
                 if (member.getVoiceState() != null && member.getVoiceState().isStream()) {
-                    DiscordStreamer discordStreamer = new DiscordStreamer();
-                    discordStreamer.setGuildID(guild.getIdLong());
-                    discordStreamer.setUserID(member.getIdLong());
                     discordStreamer.setStreamChannelName(member.getVoiceState().getChannel().getName());
-                    // Track the streamer
                     this.discordStreamers.addStreamer(discordStreamer);
-                    // Remove
-                    trackedStreamers.remove(discordStreamer.getUserID());
+                } else {
+                    this.discordStreamers.removeStreamer(discordStreamer, true);
                 }
             }
         }
-
-        // These streamers are no longer live, remove them.
-        for (Long userID : trackedStreamers) {
-            this.discordStreamers.removeStreamer(userID);
-        }
-
-        init.set(true);
     }
-
-    public static boolean isInit() {
-        return init.get();
-    }
-
 }

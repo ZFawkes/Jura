@@ -3,6 +3,7 @@ package dev.fawkes.jura;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Timer;
+import java.util.concurrent.atomic.AtomicReference;
 
 import dev.fawkes.jura.command.CommandFactory;
 import dev.fawkes.jura.command.DiscordGuildCommandListener;
@@ -22,10 +23,8 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -37,6 +36,8 @@ public class FawkesApplicationRunner implements ApplicationRunner {
      */
     private static final String DEV_CHANNEL_PROP_NAME = "fawkes.discord.dev.channel";
     private static final String DISCORD_BOT_TOKEN_PROPERTY_NAME = "fawkes.discord.token";
+
+    private final AtomicReference<Boolean> ready = new AtomicReference<>(false);
 
     /**
      * Start up JDA and kick off any tasks.
@@ -60,13 +61,11 @@ public class FawkesApplicationRunner implements ApplicationRunner {
 
         // TODO refactor tasks.
         // Generate event listeners
-        DiscordStreamsNotifier discordStreamsNotifier = new DiscordStreamsNotifier(jda);
+        DiscordStreamsNotifier discordStreamsNotifier = new DiscordStreamsNotifier(jda, this.ready);
         DiscordStreamsRoles discordStreamsRoles = new DiscordStreamsRoles(jda);
         DiscordStreamers discordStreamers = new DiscordStreamers(Arrays.asList(discordStreamsNotifier, discordStreamsRoles));
         DiscordStreamsEventListener discordStreamsEventListener = new DiscordStreamsEventListener(discordStreamers);
         DiscordGuildCommandListener discordGuildCommandListener = new DiscordGuildCommandListener(new CommandFactory());
-
-        jda.addEventListener(discordStreamsEventListener, discordGuildCommandListener);
 
         Runtime.getRuntime().addShutdownHook(new ShutdownTask(jda, System.getenv().get(DEV_CHANNEL_PROP_NAME)));
 
@@ -82,6 +81,10 @@ public class FawkesApplicationRunner implements ApplicationRunner {
         for (StartupTask startupTask : startupTasks) {
             startupTask.doTask();
         }
+
+        this.ready.set(true);
+        // Make sure everything is setup before responding to events
+        jda.addEventListener(discordStreamsEventListener, discordGuildCommandListener);
 
         // Keep app alive.
         new Thread("Keep Alive") {

@@ -25,13 +25,23 @@ public class DiscordStreamers {
         }
     }
 
-    public void removeStreamer(Long userID) {
-        DiscordStreamer streamer = this.streamers.remove(userID);
-        if (streamer != null) {
+    public void removeStreamer(DiscordStreamer streamer, boolean force) {
+        DiscordStreamer streamerRemoved = this.streamers.remove(streamer.getUserID());
+        if (force) {
             for (DiscordStreamsListener listener : this.discordStreamsListeners) {
                 listener.onStreamEnd(streamer);
             }
+        } else {
+            for (DiscordStreamsListener listener : this.discordStreamsListeners) {
+                listener.onStreamEnd(streamerRemoved);
+            }
         }
+    }
+
+    public void removeStreamer(Long userID) {
+        DiscordStreamer streamer = new DiscordStreamer();
+        streamer.setUserID(userID);
+        removeStreamer(streamer, false);
     }
 
     public HashMap<Long, DiscordStreamer> getStreamers() {
