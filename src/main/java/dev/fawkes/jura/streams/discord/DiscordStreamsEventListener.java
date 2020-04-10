@@ -29,6 +29,7 @@ public class DiscordStreamsEventListener extends ListenerAdapter {
             discordStreamer.setGuildID(event.getGuild().getIdLong());
             discordStreamer.setUserID(event.getMember().getIdLong());
             discordStreamer.setStreamChannelName(event.getVoiceState().getChannel().getName());
+            discordStreamer.setStreamStartTime(System.currentTimeMillis());
             this.discordStreamers.addStreamer(discordStreamer);
         } else {
             this.discordStreamers.removeStreamer(event.getMember().getIdLong());
