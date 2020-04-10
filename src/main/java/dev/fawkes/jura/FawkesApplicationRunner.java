@@ -17,7 +17,11 @@ import dev.fawkes.jura.streams.discord.DiscordStreamsRoles;
 import dev.fawkes.jura.streams.twitch.TwitchBroadcastTask;
 
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.AccountType;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.entities.Activity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -32,37 +36,46 @@ public class FawkesApplicationRunner implements ApplicationRunner {
      * Props (for now env props, should move most of these to config / make dynamic per guild).
      */
     private static final String DEV_CHANNEL_PROP_NAME = "fawkes.discord.dev.channel";
-
-    @Autowired
-    @Lazy
-    private JDA jda;
+    private static final String DISCORD_BOT_TOKEN_PROPERTY_NAME = "fawkes.discord.token";
 
     /**
      * Start up JDA and kick off any tasks.
      */
     public void run(ApplicationArguments args) throws Exception {
 
+        String token = System.getenv().get(DISCORD_BOT_TOKEN_PROPERTY_NAME);
+        if (token == null || token.isEmpty()) {
+            throw new IllegalArgumentException("Missing discord token.");
+        }
+        // Startup JDA.
+        JDA jda = new JDABuilder(AccountType.BOT)
+                .setToken(token)
+                .setStatus(OnlineStatus.ONLINE)
+                .setActivity(Activity.watching("Wannabe's streaming"))
+                .setEnableShutdownHook(false)
+                .build();
+
         // Wait for bot login.
-        this.jda.awaitReady();
+        jda.awaitReady();
 
         // TODO refactor tasks.
         // Generate event listeners
-        DiscordStreamsNotifier discordStreamsNotifier = new DiscordStreamsNotifier(this.jda);
-        DiscordStreamsRoles discordStreamsRoles = new DiscordStreamsRoles(this.jda);
+        DiscordStreamsNotifier discordStreamsNotifier = new DiscordStreamsNotifier(jda);
+        DiscordStreamsRoles discordStreamsRoles = new DiscordStreamsRoles(jda);
         DiscordStreamers discordStreamers = new DiscordStreamers(Arrays.asList(discordStreamsNotifier, discordStreamsRoles));
         DiscordStreamsEventListener discordStreamsEventListener = new DiscordStreamsEventListener(discordStreamers);
         DiscordGuildCommandListener discordGuildCommandListener = new DiscordGuildCommandListener(new CommandFactory());
 
         jda.addEventListener(discordStreamsEventListener, discordGuildCommandListener);
 
-        Runtime.getRuntime().addShutdownHook(new ShutdownTask(this.jda, System.getenv().get(DEV_CHANNEL_PROP_NAME)));
+        Runtime.getRuntime().addShutdownHook(new ShutdownTask(jda, System.getenv().get(DEV_CHANNEL_PROP_NAME)));
 
         // Run twitch task every 30s (first run now.)
         Timer tasksTimer = new Timer();
-        tasksTimer.schedule(new TwitchBroadcastTask(this.jda), 0, 30*1000);
+        tasksTimer.schedule(new TwitchBroadcastTask(jda), 0, 30*1000);
 
-        StreamsStartupTask streamsStartupTask = new StreamsStartupTask(new DiscordStreamsCoordinator(this.jda, discordStreamers));
-        DevStartupTask devStartupTask = new DevStartupTask(this.jda,  System.getenv().get(DEV_CHANNEL_PROP_NAME));
+        StreamsStartupTask streamsStartupTask = new StreamsStartupTask(new DiscordStreamsCoordinator(jda, discordStreamers));
+        DevStartupTask devStartupTask = new DevStartupTask(jda,  System.getenv().get(DEV_CHANNEL_PROP_NAME));
         LinkedList<StartupTask> startupTasks = new LinkedList<>();
         startupTasks.add(streamsStartupTask);
         startupTasks.add(devStartupTask);
