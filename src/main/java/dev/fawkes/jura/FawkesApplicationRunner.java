@@ -3,6 +3,8 @@ package dev.fawkes.jura;
 import java.util.Arrays;
 import java.util.Timer;
 
+import dev.fawkes.jura.command.CommandFactory;
+import dev.fawkes.jura.command.DiscordGuildCommandListener;
 import dev.fawkes.jura.dev.DevStartupTask;
 import dev.fawkes.jura.dev.ShutdownTask;
 import dev.fawkes.jura.streams.discord.DiscordStreamers;
@@ -57,8 +59,9 @@ public class FawkesApplicationRunner implements ApplicationRunner {
         DiscordStreamers discordStreamers = new DiscordStreamers(Arrays.asList(discordStreamsNotifier, discordStreamsRoles));
 
         DiscordStreamsEventListener discordStreamsEventListener = new DiscordStreamsEventListener(discordStreamers);
+        DiscordGuildCommandListener discordGuildCommandListener = new DiscordGuildCommandListener(new CommandFactory());
 
-        jda.addEventListener(discordStreamsEventListener);
+        jda.addEventListener(discordStreamsEventListener, discordGuildCommandListener);
 
         Runtime.getRuntime().addShutdownHook(new ShutdownTask(jda, System.getenv().get(DEV_CHANNEL_PROP_NAME)));
 
