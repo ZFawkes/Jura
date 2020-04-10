@@ -18,7 +18,7 @@ public class DiscordStreamers {
     }
 
     public void addStreamer(DiscordStreamer streamer) {
-        if (this.streamers.put(streamer.getUserID(), streamer) != null) {
+        if (this.streamers.put(streamer.getUserID(), streamer) == null) {
             for (DiscordStreamsListener listener : this.discordStreamsListeners) {
                 listener.onStreamStart(streamer);
             }
