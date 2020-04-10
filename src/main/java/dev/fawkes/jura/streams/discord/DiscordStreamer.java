@@ -5,7 +5,6 @@ import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 
-// TODO can I use a factory to populate generate a stopped streamer, starting streamer etc?
 /**
  * Discord Streamer object.
  */
@@ -16,6 +15,7 @@ public class DiscordStreamer {
     private Long userID;
     private Long streamStartMessageID;
     private String streamChannelName;
+    private Long streamStartTime;
 
     @Override
     public boolean equals(Object o) {

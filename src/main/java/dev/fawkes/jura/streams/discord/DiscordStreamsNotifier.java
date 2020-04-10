@@ -1,6 +1,7 @@
 package dev.fawkes.jura.streams.discord;
 
 import java.awt.Color;
+import java.util.concurrent.TimeUnit;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
@@ -51,7 +52,15 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
 
     @Override
     public void onStreamEnd(DiscordStreamer streamer) {
-        MessageEmbed embedMessage = getDiscordStreamEndedMessage(this.jda.getUserById(streamer.getUserID()).getName());
+        String user = this.jda.getUserById(streamer.getUserID()).getName();
+        String streamDuration;
+        if (streamer.getStreamStartTime() != null ) {
+            streamDuration = streamDuration(System.currentTimeMillis() - streamer.getStreamStartTime());
+        } else {
+            streamDuration = "Oh sh!t: Here there be dragons.";
+        }
+
+        MessageEmbed embedMessage = getDiscordStreamEndedMessage(user, streamDuration);
         this.streamNotificationChannel.sendMessage(embedMessage).complete();
     }
 
@@ -66,11 +75,38 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
         return embedBuilder.build();
     }
 
-    private static MessageEmbed getDiscordStreamEndedMessage(String user) {
+    private static MessageEmbed getDiscordStreamEndedMessage(String user, String streamTime) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setAuthor("Discord Stream Ended", null, "https://discordapp.com/assets/2c21aeda16de354ba5334551a883b481.png");
         embedBuilder.setDescription(user + " has stopped streaming");
         embedBuilder.setColor(new Color(132, 244, 251));
+        embedBuilder.addField("Stream duration", streamTime, false);
         return embedBuilder.build();
+    }
+
+    private static String streamDuration(Long duration) {
+        long days = TimeUnit.MILLISECONDS.toDays(duration);
+        duration -= TimeUnit.DAYS.toMillis(days);
+        long hours = TimeUnit.MILLISECONDS.toHours(duration);
+        duration -= TimeUnit.HOURS.toMillis(hours);
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(duration);
+        duration -= TimeUnit.MINUTES.toMillis(minutes);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(duration);
+
+        String durationText = "";
+        if (days > 0) {
+            durationText = durationText + days + "d ";
+        }
+        if (hours > 0) {
+            durationText = durationText + hours + "h ";
+        }
+        if (minutes > 0) {
+            durationText = durationText + minutes + "m ";
+        }
+        if (seconds > 0) {
+            durationText = durationText + seconds + "s";
+        }
+        return durationText;
+
     }
 }
