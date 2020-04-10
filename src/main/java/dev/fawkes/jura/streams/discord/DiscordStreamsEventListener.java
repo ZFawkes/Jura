@@ -1,6 +1,5 @@
 package dev.fawkes.jura.streams.discord;
 
-import java.util.List;
 import javax.annotation.Nonnull;
 
 import lombok.extern.slf4j.Slf4j;
@@ -15,10 +14,10 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 @Slf4j
 public class DiscordStreamsEventListener extends ListenerAdapter {
 
-    private final List<DiscordStreamsListener> discordStreamsListeners;
+    private final DiscordStreamers discordStreamers;
 
-    public DiscordStreamsEventListener(List<DiscordStreamsListener> discordStreamsListeners) {
-        this.discordStreamsListeners = discordStreamsListeners;
+    public DiscordStreamsEventListener(DiscordStreamers streamers) {
+        this.discordStreamers = streamers;
     }
 
     @Override
@@ -30,16 +29,9 @@ public class DiscordStreamsEventListener extends ListenerAdapter {
             discordStreamer.setGuildID(event.getGuild().getIdLong());
             discordStreamer.setUserID(event.getMember().getIdLong());
             discordStreamer.setStreamChannelName(event.getVoiceState().getChannel().getName());
-            for (DiscordStreamsListener listener : this.discordStreamsListeners) {
-                listener.onStreamStart(discordStreamer);
-            }
+            this.discordStreamers.addStreamer(discordStreamer);
         } else {
-            DiscordStreamer discordStreamer = new DiscordStreamer();
-            discordStreamer.setGuildID(event.getGuild().getIdLong());
-            discordStreamer.setUserID(event.getMember().getIdLong());
-            for (DiscordStreamsListener listener : this.discordStreamsListeners) {
-                listener.onStreamEnd(discordStreamer);
-            }
+            this.discordStreamers.removeStreamer(event.getMember().getIdLong());
         }
     }
 
@@ -53,14 +45,7 @@ public class DiscordStreamsEventListener extends ListenerAdapter {
         log.info("Voice update event - user:{}, streaming:{}, responseID:{}", member.getEffectiveName(), member.getVoiceState().isStream(), event.getResponseNumber());
 
         if (member.getVoiceState().isStream()) {
-            DiscordStreamer discordStreamer = new DiscordStreamer();
-            discordStreamer.setGuildID(member.getGuild().getIdLong());
-            discordStreamer.setUserID(member.getIdLong());
-            for (DiscordStreamsListener listener : this.discordStreamsListeners) {
-                listener.onStreamEnd(discordStreamer);
-            }
+            this.discordStreamers.removeStreamer(member.getIdLong());
         }
     }
-
-
 }

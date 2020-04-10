@@ -20,12 +20,8 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
     private final String streamNotificationMention;
     private final JDA jda;
 
-    private final DiscordStreamers streamers;
-
-
-    public DiscordStreamsNotifier(JDA jda, DiscordStreamers streamers) {
+    public DiscordStreamsNotifier(JDA jda) {
         this.jda = jda;
-        this.streamers = streamers;
         Role streamMentionRole = jda.getRoleById(System.getenv().get(NOTIFICATION_ROLE_MENTION_ID_PROPERTY_NAME));
         if (streamMentionRole == null) {
             throw new IllegalStateException("Could not get stream mention.");
@@ -39,30 +35,24 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
 
     @Override
     public void onStreamStart(DiscordStreamer streamer) {
-        if (!this.streamers.isStreaming(streamer.getUserID())) {
-            User user = this.jda.getUserById(streamer.getUserID());
-            MessageEmbed embedMessage = getDiscordStreamStartedMessage(user, ":loud_sound: " + streamer.getStreamChannelName());
+        User user = this.jda.getUserById(streamer.getUserID());
+        MessageEmbed embedMessage = getDiscordStreamStartedMessage(user, ":loud_sound: " + streamer.getStreamChannelName());
 
-            Message message = new MessageBuilder()
-                    .append(this.streamNotificationMention)
-                    .append(" - ")
-                    .append(user.getName())
-                    .append(" is now streaming on Discord")
-                    .build();
+        Message message = new MessageBuilder()
+                .append(this.streamNotificationMention)
+                .append(" - ")
+                .append(user.getName())
+                .append(" is now streaming on Discord")
+                .build();
 
-            Message result = this.streamNotificationChannel.sendMessage(message).embed(embedMessage).complete();
-            streamer.setStreamStartMessageID(result.getIdLong());
-            this.streamers.addStreamer(streamer);
-        }
+        Message result = this.streamNotificationChannel.sendMessage(message).embed(embedMessage).complete();
+        streamer.setStreamStartMessageID(result.getIdLong());
     }
 
     @Override
     public void onStreamEnd(DiscordStreamer streamer) {
-        if (this.streamers.isStreaming(streamer.getUserID())) {
-            MessageEmbed embedMessage = getDiscordStreamEndedMessage(this.jda.getUserById(streamer.getUserID()).getName());
-            this.streamNotificationChannel.sendMessage(embedMessage).complete();
-            this.streamers.removeStreamer(streamer.getUserID());
-        }
+        MessageEmbed embedMessage = getDiscordStreamEndedMessage(this.jda.getUserById(streamer.getUserID()).getName());
+        this.streamNotificationChannel.sendMessage(embedMessage).complete();
     }
 
 

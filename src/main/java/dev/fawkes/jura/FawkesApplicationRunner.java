@@ -52,10 +52,11 @@ public class FawkesApplicationRunner implements ApplicationRunner {
 
         // TODO determine a better way to instantiate the event listeners.
         // Generate event listeners
-        DiscordStreamers discordStreamers = new DiscordStreamers();
-        DiscordStreamsNotifier discordStreamsNotifier = new DiscordStreamsNotifier(jda, discordStreamers);
+        DiscordStreamsNotifier discordStreamsNotifier = new DiscordStreamsNotifier(jda);
         DiscordStreamsRoles discordStreamsRoles = new DiscordStreamsRoles(jda);
-        DiscordStreamsEventListener discordStreamsEventListener = new DiscordStreamsEventListener(Arrays.asList(discordStreamsNotifier, discordStreamsRoles));
+        DiscordStreamers discordStreamers = new DiscordStreamers(Arrays.asList(discordStreamsNotifier, discordStreamsRoles));
+
+        DiscordStreamsEventListener discordStreamsEventListener = new DiscordStreamsEventListener(discordStreamers);
 
         jda.addEventListener(discordStreamsEventListener);
 
