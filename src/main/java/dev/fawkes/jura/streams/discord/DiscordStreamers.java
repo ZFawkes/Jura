@@ -4,9 +4,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.stereotype.Repository;
+
 /**
  * Holds the collection of current streamers.
  */
+@Repository
 public class DiscordStreamers {
 
     private final List<DiscordStreamsListener> discordStreamsListeners;

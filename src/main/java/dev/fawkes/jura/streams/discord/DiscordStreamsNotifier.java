@@ -2,6 +2,7 @@ package dev.fawkes.jura.streams.discord;
 
 import java.awt.Color;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -21,9 +22,9 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
     private final TextChannel streamNotificationChannel;
     private final String streamNotificationMention;
     private final JDA jda;
-    private final AtomicReference<Boolean> ready;
+    private final AtomicBoolean ready;
 
-    public DiscordStreamsNotifier(JDA jda, AtomicReference<Boolean> ready) {
+    public DiscordStreamsNotifier(JDA jda, AtomicBoolean ready) {
         this.jda = jda;
         Role streamMentionRole = jda.getRoleById(System.getenv().get(NOTIFICATION_ROLE_MENTION_ID_PROPERTY_NAME));
         if (streamMentionRole == null) {
