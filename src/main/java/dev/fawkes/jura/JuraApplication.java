@@ -4,7 +4,7 @@ import dev.fawkes.jura.app.AppInit;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
@@ -32,7 +32,7 @@ public class JuraApplication {
         }.start();
     }
 
-    @EventListener(ApplicationReadyEvent.class)
+    @EventListener(ApplicationStartedEvent.class)
     public void run() throws Exception {
         new AppInit().init().start();
     }

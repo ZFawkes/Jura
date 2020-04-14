@@ -21,7 +21,7 @@ public class AppReady {
 
     private static final String DEV_CHANNEL_PROP_NAME = "fawkes.discord.dev.channel";
 
-    public AppReady(JDA jda, DiscordStreamers discordStreamers, AtomicBoolean isReady) {
+    AppReady(JDA jda, DiscordStreamers discordStreamers, AtomicBoolean isReady) {
         this.jda = jda;
         this.discordStreamers = discordStreamers;
         this.isReady = isReady;
