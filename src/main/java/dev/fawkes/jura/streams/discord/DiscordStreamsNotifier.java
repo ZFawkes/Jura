@@ -66,7 +66,7 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
 
     @Override
     public void onStreamUpdate(DiscordStreamer streamer) {
-        if (this.ready.get()) {
+        if (this.ready.get() && streamer.getStreamStartMessageID() != null) {
             User user = this.jda.getUserById(streamer.getUserID());
             MessageEmbed embedMessage = getDiscordStreamStartedMessage(
                     user,
@@ -82,7 +82,7 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
     public void onStreamEnd(DiscordStreamer streamer) {
         if (this.ready.get()) {
             String user = this.jda.getUserById(streamer.getUserID()).getName();
-            String streamDuration = streamDuration(streamer.getStreamDuration());
+            String streamDuration = streamDuration(streamer.getStreamChannelID() != null ? streamer.getStreamDuration() : null);
 
             MessageEmbed embedMessage = getDiscordStreamEndedMessage(user, streamDuration, streamer.getAllViewers());
             this.streamNotificationChannel.sendMessage(embedMessage).complete();
@@ -101,7 +101,7 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
             List<String> currentViewersNames = currentViewers.stream().map(userID -> this.jda.getUserById(userID).getName()).collect(Collectors.toList());
             List<String> allViewersNames = allViewers.stream().map(userID -> this.jda.getUserById(userID).getName()).collect(Collectors.toList());
             embedBuilder.addField("Current Viewers: (" + currentViewers.size() + ")", String.join(", ", currentViewersNames), false);
-            embedBuilder.addField("All Viewers: (" + allViewers.size() + ")", String.join(", ", allViewersNames), false);
+            embedBuilder.addField("Viewers: (" + allViewers.size() + ")", String.join(", ", allViewersNames), false);
         }
         embedBuilder.addField("Stream duration", streamTime, false);
         return embedBuilder.build();
@@ -114,7 +114,7 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
         embedBuilder.setColor(new Color(132, 244, 251));
         embedBuilder.addField("Stream duration", streamTime, false);
         List<String> currentViewersNames = allViewers.stream().map(userID -> this.jda.getUserById(userID).getName()).collect(Collectors.toList());
-        embedBuilder.addField("Viewers were", String.join(", ", currentViewersNames), false);
+        embedBuilder.addField("Viewers (" + allViewers.size() + ")", String.join(", ", currentViewersNames), false);
         return embedBuilder.build();
     }
 

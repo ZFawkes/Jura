@@ -35,8 +35,8 @@ public class DiscordStreamsCoordinator {
         for (Guild guild : this.jda.getGuilds()) {
             for (Member member : guild.getMembers()) {
                 List<String> memberRoles = member.getRoles().stream().map(r -> r.getId()).collect(Collectors.toList());
-                if (!(memberRoles.contains(System.getenv().get("fawkes.discord.streaming.role")) && (member.getVoiceState() == null || !member.getVoiceState().isStream()))) {
-                    guild.removeRoleFromMember(member.getIdLong(), this.jda.getRoleById(System.getenv().get("fawkes.discord.streaming.role")));
+                if (memberRoles.contains(System.getenv().get("fawkes.discord.streaming.role")) && (member.getVoiceState() == null || !member.getVoiceState().isStream())) {
+                    guild.removeRoleFromMember(member.getIdLong(), this.jda.getRoleById(System.getenv().get("fawkes.discord.streaming.role"))).complete();
                 }
             }
         }
