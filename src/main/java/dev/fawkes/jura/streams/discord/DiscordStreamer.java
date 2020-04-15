@@ -20,8 +20,13 @@ public class DiscordStreamer {
     private Long streamStartMessageID;
     private Long streamChannelID;
     private Long streamStartTime;
+    private Long streamDuration;
     private Set<Long> currentViewers = new HashSet<>();
     private Set<Long> allViewers = new HashSet<>();
+
+    public void updateDuration(Long now) {
+        this.streamDuration = now - streamStartTime;
+    }
 
     public void addViewer(Long viewerID) {
         this.currentViewers.add(viewerID);

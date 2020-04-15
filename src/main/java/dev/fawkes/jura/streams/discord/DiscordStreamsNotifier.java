@@ -49,7 +49,7 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
                     jda.getVoiceChannelById(streamer.getStreamChannelID()).getName(),
                     streamer.getCurrentViewers(),
                     streamer.getAllViewers(),
-                    streamDuration(streamer.getStreamStartTime())
+                    streamDuration(streamer.getStreamDuration())
             );
 
             Message message = new MessageBuilder()
@@ -73,7 +73,7 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
                     jda.getVoiceChannelById(streamer.getStreamChannelID()).getName(),
                     streamer.getCurrentViewers(),
                     streamer.getAllViewers(),
-                    streamDuration(streamer.getStreamStartTime()));
+                    streamDuration(streamer.getStreamDuration()));
             this.streamNotificationChannel.editMessageById(streamer.getStreamStartMessageID(), embedMessage).queue();
         }
     }
@@ -82,7 +82,7 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
     public void onStreamEnd(DiscordStreamer streamer) {
         if (this.ready.get()) {
             String user = this.jda.getUserById(streamer.getUserID()).getName();
-            String streamDuration = streamDuration(streamer.getStreamStartTime());
+            String streamDuration = streamDuration(streamer.getStreamDuration());
 
             MessageEmbed embedMessage = getDiscordStreamEndedMessage(user, streamDuration, streamer.getAllViewers());
             this.streamNotificationChannel.sendMessage(embedMessage).complete();
@@ -118,16 +118,14 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
         return embedBuilder.build();
     }
 
-    private static String streamDuration(Long startTime) {
-        if (startTime != null) {
-            Long startedTime = startTime;
-            Long duration = System.currentTimeMillis() - startedTime;
+    private static String streamDuration(Long duration) {
+        if (duration != null) {
             long days = TimeUnit.MILLISECONDS.toDays(duration);
-            startedTime -= TimeUnit.DAYS.toMillis(days);
+            duration -= TimeUnit.DAYS.toMillis(days);
             long hours = TimeUnit.MILLISECONDS.toHours(duration);
-            startedTime -= TimeUnit.HOURS.toMillis(hours);
+            duration -= TimeUnit.HOURS.toMillis(hours);
             long minutes = TimeUnit.MILLISECONDS.toMinutes(duration);
-            startedTime -= TimeUnit.MINUTES.toMillis(minutes);
+            duration -= TimeUnit.MINUTES.toMillis(minutes);
             long seconds = TimeUnit.MILLISECONDS.toSeconds(duration);
 
             String durationText = "";

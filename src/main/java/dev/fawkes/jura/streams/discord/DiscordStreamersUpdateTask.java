@@ -13,6 +13,7 @@ public class DiscordStreamersUpdateTask extends TimerTask {
     @Override
     public void run() {
         for (DiscordStreamer discordStreamer : this.discordStreamers.getStreamers().values()) {
+            discordStreamer.updateDuration(System.currentTimeMillis());
             this.discordStreamers.updateStreamer(discordStreamer);
         }
     }
