@@ -1,10 +1,11 @@
 package dev.fawkes.jura.streams.discord;
 
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.entities.Member;
 
 public class DiscordStreamsCoordinator {
@@ -20,14 +21,22 @@ public class DiscordStreamsCoordinator {
     public void setStreamers() {
         for (Guild guild : this.jda.getGuilds()) {
             for (Member member : guild.getMembers()) {
-                DiscordStreamer discordStreamer = new DiscordStreamer();
-                discordStreamer.setGuildID(guild.getIdLong());
-                discordStreamer.setUserID(member.getIdLong());
                 if (member.getVoiceState() != null && member.getVoiceState().isStream()) {
-                    discordStreamer.setStreamChannelName(member.getVoiceState().getChannel().getName());
-                    this.discordStreamers.addStreamer(discordStreamer);
+                    List<Long> viewers = member.getVoiceState().getChannel().getMembers().stream().map(ISnowflake::getIdLong).collect(Collectors.toList());
+                    this.discordStreamers.addStreamer(guild.getIdLong(), member.getIdLong(), member.getVoiceState().getChannel().getIdLong(), System.currentTimeMillis(), viewers);
                 } else {
-                    this.discordStreamers.removeStreamer(discordStreamer, true);
+                    this.discordStreamers.removeStreamer(member.getIdLong());
+                }
+            }
+        }
+    }
+
+    public void setRoles() {
+        for (Guild guild : this.jda.getGuilds()) {
+            for (Member member : guild.getMembers()) {
+                List<String> memberRoles = member.getRoles().stream().map(r -> r.getId()).collect(Collectors.toList());
+                if (!(memberRoles.contains(System.getenv().get("fawkes.discord.streaming.role")) && (member.getVoiceState() == null || !member.getVoiceState().isStream()))) {
+                    guild.removeRoleFromMember(member.getIdLong(), this.jda.getRoleById(System.getenv().get("fawkes.discord.streaming.role")));
                 }
             }
         }

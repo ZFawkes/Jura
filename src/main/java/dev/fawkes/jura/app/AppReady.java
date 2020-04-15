@@ -8,6 +8,7 @@ import dev.fawkes.jura.command.DiscordGuildCommandListener;
 import dev.fawkes.jura.dev.DevStartupTask;
 import dev.fawkes.jura.dev.ShutdownTask;
 import dev.fawkes.jura.streams.discord.DiscordStreamers;
+import dev.fawkes.jura.streams.discord.DiscordStreamersUpdateTask;
 import dev.fawkes.jura.streams.discord.DiscordStreamsEventListener;
 import dev.fawkes.jura.streams.twitch.TwitchBroadcastTask;
 
@@ -34,6 +35,7 @@ public class AppReady {
         // Run twitch task every 30s (first run now.)
         Timer tasksTimer = new Timer();
         tasksTimer.schedule(new TwitchBroadcastTask(jda), 0, 30*1000);
+        tasksTimer.schedule(new DiscordStreamersUpdateTask(discordStreamers), 0, 5*1000);
 
         DiscordStreamsEventListener discordStreamsEventListener = new DiscordStreamsEventListener(discordStreamers);
         DiscordGuildCommandListener discordGuildCommandListener = new DiscordGuildCommandListener(new CommandFactory());

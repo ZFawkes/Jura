@@ -15,5 +15,7 @@ public class StreamsStartupTask implements StartupTask {
     @Override
     public void doTask() {
         this.discordStreamsCoordinator.setStreamers();
+        // TODO have discord streamers coordinate roles.
+        this.discordStreamsCoordinator.setRoles();
     }
 }

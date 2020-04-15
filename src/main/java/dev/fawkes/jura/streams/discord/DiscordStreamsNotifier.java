@@ -1,9 +1,11 @@
 package dev.fawkes.jura.streams.discord;
 
 import java.awt.Color;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
@@ -42,7 +44,13 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
     public void onStreamStart(DiscordStreamer streamer) {
         if (this.ready.get()) {
             User user = this.jda.getUserById(streamer.getUserID());
-            MessageEmbed embedMessage = getDiscordStreamStartedMessage(user, ":loud_sound: " + streamer.getStreamChannelName());
+            MessageEmbed embedMessage = getDiscordStreamStartedMessage(
+                    user,
+                    jda.getVoiceChannelById(streamer.getStreamChannelID()).getName(),
+                    streamer.getCurrentViewers(),
+                    streamer.getAllViewers(),
+                    streamDuration(streamer.getStreamStartTime())
+            );
 
             Message message = new MessageBuilder()
                     .append(this.streamNotificationMention)
@@ -57,64 +65,89 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
     }
 
     @Override
+    public void onStreamUpdate(DiscordStreamer streamer) {
+        if (this.ready.get()) {
+            User user = this.jda.getUserById(streamer.getUserID());
+            MessageEmbed embedMessage = getDiscordStreamStartedMessage(
+                    user,
+                    jda.getVoiceChannelById(streamer.getStreamChannelID()).getName(),
+                    streamer.getCurrentViewers(),
+                    streamer.getAllViewers(),
+                    streamDuration(streamer.getStreamStartTime()));
+            this.streamNotificationChannel.editMessageById(streamer.getStreamStartMessageID(), embedMessage).queue();
+        }
+    }
+
+    @Override
     public void onStreamEnd(DiscordStreamer streamer) {
         if (this.ready.get()) {
             String user = this.jda.getUserById(streamer.getUserID()).getName();
-            String streamDuration;
-            if (streamer.getStreamStartTime() != null ) {
-                streamDuration = streamDuration(System.currentTimeMillis() - streamer.getStreamStartTime());
-            } else {
-                streamDuration = "Oh sh!t: Here there be dragons.";
-            }
+            String streamDuration = streamDuration(streamer.getStreamStartTime());
 
-            MessageEmbed embedMessage = getDiscordStreamEndedMessage(user, streamDuration);
+            MessageEmbed embedMessage = getDiscordStreamEndedMessage(user, streamDuration, streamer.getAllViewers());
             this.streamNotificationChannel.sendMessage(embedMessage).complete();
         }
     }
 
 
-    private static MessageEmbed getDiscordStreamStartedMessage(User user, String channel) {
+    private MessageEmbed getDiscordStreamStartedMessage(User user, String channel, Set<Long> currentViewers, Set<Long> allViewers, String streamTime) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setAuthor("Discord Stream Started", null, "https://discordapp.com/assets/2c21aeda16de354ba5334551a883b481.png");
         embedBuilder.setTitle(user.getName() + " is streaming");
-        embedBuilder.setDescription(channel);
+        embedBuilder.setDescription(":loud_sound: " + channel);
         embedBuilder.setThumbnail(user.getEffectiveAvatarUrl());
         embedBuilder.setColor(new Color(132, 244, 251));
+        if (currentViewers != null && allViewers != null) {
+            List<String> currentViewersNames = currentViewers.stream().map(userID -> this.jda.getUserById(userID).getName()).collect(Collectors.toList());
+            List<String> allViewersNames = allViewers.stream().map(userID -> this.jda.getUserById(userID).getName()).collect(Collectors.toList());
+            embedBuilder.addField("Current Viewers: (" + currentViewers.size() + ")", String.join(", ", currentViewersNames), false);
+            embedBuilder.addField("All Viewers: (" + allViewers.size() + ")", String.join(", ", allViewersNames), false);
+        }
+        embedBuilder.addField("Stream duration", streamTime, false);
         return embedBuilder.build();
     }
 
-    private static MessageEmbed getDiscordStreamEndedMessage(String user, String streamTime) {
+    private MessageEmbed getDiscordStreamEndedMessage(String user, String streamTime, Set<Long> allViewers) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setAuthor("Discord Stream Ended", null, "https://discordapp.com/assets/2c21aeda16de354ba5334551a883b481.png");
         embedBuilder.setDescription(user + " has stopped streaming");
         embedBuilder.setColor(new Color(132, 244, 251));
         embedBuilder.addField("Stream duration", streamTime, false);
+        List<String> currentViewersNames = allViewers.stream().map(userID -> this.jda.getUserById(userID).getName()).collect(Collectors.toList());
+        embedBuilder.addField("Viewers were", String.join(", ", currentViewersNames), false);
         return embedBuilder.build();
     }
 
-    private static String streamDuration(Long duration) {
-        long days = TimeUnit.MILLISECONDS.toDays(duration);
-        duration -= TimeUnit.DAYS.toMillis(days);
-        long hours = TimeUnit.MILLISECONDS.toHours(duration);
-        duration -= TimeUnit.HOURS.toMillis(hours);
-        long minutes = TimeUnit.MILLISECONDS.toMinutes(duration);
-        duration -= TimeUnit.MINUTES.toMillis(minutes);
-        long seconds = TimeUnit.MILLISECONDS.toSeconds(duration);
+    private static String streamDuration(Long startTime) {
+        if (startTime != null) {
+            Long startedTime = startTime;
+            Long duration = System.currentTimeMillis() - startedTime;
+            long days = TimeUnit.MILLISECONDS.toDays(duration);
+            startedTime -= TimeUnit.DAYS.toMillis(days);
+            long hours = TimeUnit.MILLISECONDS.toHours(duration);
+            startedTime -= TimeUnit.HOURS.toMillis(hours);
+            long minutes = TimeUnit.MILLISECONDS.toMinutes(duration);
+            startedTime -= TimeUnit.MINUTES.toMillis(minutes);
+            long seconds = TimeUnit.MILLISECONDS.toSeconds(duration);
 
-        String durationText = "";
-        if (days > 0) {
-            durationText = durationText + days + "d ";
+            String durationText = "";
+            if (days > 0) {
+                durationText = durationText + days + "d ";
+            }
+            if (hours > 0) {
+                durationText = durationText + hours + "h ";
+            }
+            if (minutes > 0) {
+                durationText = durationText + minutes + "m ";
+            }
+            if (seconds > 0) {
+                durationText = durationText + seconds + "s";
+            }
+            return durationText;
+        } else {
+            return "Oh sh!t: Here there be dragons.";
         }
-        if (hours > 0) {
-            durationText = durationText + hours + "h ";
-        }
-        if (minutes > 0) {
-            durationText = durationText + minutes + "m ";
-        }
-        if (seconds > 0) {
-            durationText = durationText + seconds + "s";
-        }
-        return durationText;
+
 
     }
 }

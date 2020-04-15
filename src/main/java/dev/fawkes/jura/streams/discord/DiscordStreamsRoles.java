@@ -31,4 +31,11 @@ public class DiscordStreamsRoles implements DiscordStreamsListener {
             this.jda.getGuildById(streamer.getGuildID()).removeRoleFromMember(streamer.getUserID(), this.jda.getRoleById(this.roleID)).queue();
         }
     }
+
+    @Override
+    public void onStreamUpdate(DiscordStreamer streamer) {
+
+    }
+
+
 }

@@ -3,9 +3,6 @@ package dev.fawkes.jura.streams.discord;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.springframework.stereotype.Repository;
-
 /**
  * Holds the collection of current streamers.
  */
@@ -19,7 +16,13 @@ public class DiscordStreamers {
         this.discordStreamsListeners = discordStreamsListeners;
     }
 
-    public void addStreamer(DiscordStreamer streamer) {
+    public void addStreamer(Long guildID, Long userID, Long channelID, Long streamStartTime, List<Long> viewers) {
+        DiscordStreamer streamer = new DiscordStreamer();
+        streamer.setGuildID(guildID);
+        streamer.setUserID(userID);
+        streamer.setStreamChannelID(channelID);
+        streamer.setStreamStartTime(streamStartTime);
+        streamer.addViewers(viewers);
         if (this.streamers.put(streamer.getUserID(), streamer) == null) {
             for (DiscordStreamsListener listener : this.discordStreamsListeners) {
                 listener.onStreamStart(streamer);
@@ -27,23 +30,20 @@ public class DiscordStreamers {
         }
     }
 
-    public void removeStreamer(DiscordStreamer streamer, boolean force) {
-        DiscordStreamer streamerRemoved = this.streamers.remove(streamer.getUserID());
-        if (force) {
-            for (DiscordStreamsListener listener : this.discordStreamsListeners) {
-                listener.onStreamEnd(streamer);
-            }
-        } else {
-            for (DiscordStreamsListener listener : this.discordStreamsListeners) {
-                listener.onStreamEnd(streamerRemoved);
-            }
+    public void updateStreamer(DiscordStreamer streamer) {
+        this.streamers.put(streamer.getUserID(), streamer);
+        for (DiscordStreamsListener listener : this.discordStreamsListeners) {
+            listener.onStreamUpdate(streamer);
         }
     }
 
     public void removeStreamer(Long userID) {
-        DiscordStreamer streamer = new DiscordStreamer();
-        streamer.setUserID(userID);
-        removeStreamer(streamer, false);
+        DiscordStreamer streamerRemoved = this.streamers.remove(userID);
+        if (streamerRemoved != null) {
+            for (DiscordStreamsListener listener : this.discordStreamsListeners) {
+                listener.onStreamEnd(streamerRemoved);
+            }
+        }
     }
 
     public HashMap<Long, DiscordStreamer> getStreamers() {

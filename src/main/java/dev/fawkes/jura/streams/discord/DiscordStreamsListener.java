@@ -6,4 +6,6 @@ public interface DiscordStreamsListener {
 
     void onStreamEnd(DiscordStreamer streamer);
 
+    void onStreamUpdate(DiscordStreamer streamer);
+
 }
