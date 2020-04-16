@@ -7,11 +7,13 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceStreamEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.springframework.stereotype.Component;
 
 /**
  * Listens for & reacts to discord "Go live" events;
  */
 @Slf4j
+@Component
 public class DiscordStreamsEventListener extends ListenerAdapter {
 
     private final DiscordStreamers discordStreamers;

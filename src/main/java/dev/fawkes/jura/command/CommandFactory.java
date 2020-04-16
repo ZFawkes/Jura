@@ -3,7 +3,9 @@ package dev.fawkes.jura.command;
 import dev.fawkes.jura.dev.PingCommand;
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CommandFactory {
 
     public Command getCommand(GuildMessageReceivedEvent event) {

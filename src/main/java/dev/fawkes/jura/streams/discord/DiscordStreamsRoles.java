@@ -1,20 +1,23 @@
 package dev.fawkes.jura.streams.discord;
 
-
 import net.dv8tion.jda.api.JDA;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+@Component
 public class DiscordStreamsRoles implements DiscordStreamsListener {
 
-    private static final String CURRENT_STREAMING_ROLE_ID_PROPERTY_NAME = "fawkes.discord.streaming.role";
+
+    private final String streamerRoleID;
 
     private JDA jda;
     private String roleID;
 
-    public DiscordStreamsRoles(JDA jda) {
+    public DiscordStreamsRoles(JDA jda, @Value("${fawkes.discord.streaming.role}") String streamerRoleID) {
+        this.streamerRoleID = streamerRoleID;
         this.jda = jda;
-        String roleID = System.getenv().get(CURRENT_STREAMING_ROLE_ID_PROPERTY_NAME);
-        if (roleID != null && !roleID.isEmpty()) {
-            this.roleID = roleID;
+        if (streamerRoleID != null && !streamerRoleID.isEmpty()) {
+            this.roleID = streamerRoleID;
         }
     }
 

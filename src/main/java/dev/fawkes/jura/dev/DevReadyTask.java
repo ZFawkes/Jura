@@ -2,19 +2,20 @@ package dev.fawkes.jura.dev;
 
 import java.awt.Color;
 
-import dev.fawkes.jura.StartupTask;
-
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
-public class DevStartupTask implements StartupTask {
+@Component
+public class DevReadyTask {
 
     private JDA jda;
-    private String devChannelID;
+    private final String devChannelID;
 
-    public DevStartupTask(JDA jda, String devChannelID) {
-        this.jda = jda;
+    public DevReadyTask(JDA jda, @Value("${fawkes.discord.dev.channel}") String devChannelID) {
         this.devChannelID = devChannelID;
+        this.jda = jda;
     }
 
     public void doTask() {

@@ -3,7 +3,6 @@ package dev.fawkes.jura.streams.discord;
 import java.awt.Color;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
@@ -13,10 +12,10 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
-import static dev.fawkes.jura.streams.Streams.NOTIFICATION_CHANNEL_ID_PROPERTY_NAME;
-import static dev.fawkes.jura.streams.Streams.NOTIFICATION_ROLE_MENTION_ID_PROPERTY_NAME;
-
+@Component
 public class DiscordStreamsNotifier implements DiscordStreamsListener {
 
     private final TextChannel streamNotificationChannel;
@@ -24,14 +23,19 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
     private final JDA jda;
     private final AtomicBoolean ready;
 
-    public DiscordStreamsNotifier(JDA jda, AtomicBoolean ready) {
+    private final String roleMentionID;
+    private final String streamNotificationChannelID;
+
+    public DiscordStreamsNotifier(JDA jda, AtomicBoolean ready, @Value("${fawkes.discord.notify.role}") String roleMentionID, @Value("${fawkes.discord.notify.channel}") String streamNotificationChannelID) {
         this.jda = jda;
-        Role streamMentionRole = jda.getRoleById(System.getenv().get(NOTIFICATION_ROLE_MENTION_ID_PROPERTY_NAME));
+        this.roleMentionID = roleMentionID;
+        this.streamNotificationChannelID = streamNotificationChannelID;
+        Role streamMentionRole = jda.getRoleById(this.roleMentionID);
         if (streamMentionRole == null) {
             throw new IllegalStateException("Could not get stream mention.");
         }
         this.streamNotificationMention = streamMentionRole.getAsMention();
-        this.streamNotificationChannel = jda.getTextChannelById(System.getenv().get(NOTIFICATION_CHANNEL_ID_PROPERTY_NAME));
+        this.streamNotificationChannel = jda.getTextChannelById(this.streamNotificationChannelID);
         if (this.streamNotificationChannel == null) {
             throw new IllegalStateException("Could not get stream notification channel.");
         }

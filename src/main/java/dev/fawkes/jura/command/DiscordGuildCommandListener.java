@@ -2,7 +2,9 @@ package dev.fawkes.jura.command;
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.springframework.stereotype.Component;
 
+@Component
 public class DiscordGuildCommandListener extends ListenerAdapter {
 
     private CommandFactory commandFactory;

@@ -1,50 +1,47 @@
 package dev.fawkes.jura.app;
 
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Timer;
 
+import dev.fawkes.jura.command.DiscordGuildCommandListener;
+import dev.fawkes.jura.dev.ShutdownTask;
 import dev.fawkes.jura.streams.StreamsStartupTask;
-import dev.fawkes.jura.streams.discord.DiscordStreamers;
-import dev.fawkes.jura.streams.discord.DiscordStreamsCoordinator;
-import dev.fawkes.jura.streams.discord.DiscordStreamsNotifier;
-import dev.fawkes.jura.streams.discord.DiscordStreamsRoles;
+import dev.fawkes.jura.streams.discord.DiscordStreamsEventListener;
+import dev.fawkes.jura.streams.twitch.TwitchBroadcastTask;
 
-import net.dv8tion.jda.api.AccountType;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.OnlineStatus;
-import net.dv8tion.jda.api.entities.Activity;
+import org.springframework.stereotype.Component;
 
+@Component
 public class AppInit {
 
-    private static final String DISCORD_BOT_TOKEN_PROPERTY_NAME = "fawkes.discord.token";
+    private final AppReadyImpl appReadyImpl;
+    private final StreamsStartupTask streamsStartupTask;
+    private final ShutdownTask shutdownTask;
+    private final JDA jda;
+    private final TwitchBroadcastTask twitchBroadcastTask;
+    private final DiscordStreamsEventListener discordStreamsEventListener;
+    private final DiscordGuildCommandListener discordGuildCommandListener;
 
-    public AppReady init() throws Exception {
-
-        JDA jda = createJDA().awaitReady();
-        AtomicBoolean isReady = new AtomicBoolean(false);
-
-        DiscordStreamsNotifier discordStreamsNotifier = new DiscordStreamsNotifier(jda, isReady);
-        DiscordStreamsRoles discordStreamsRoles = new DiscordStreamsRoles(jda);
-        DiscordStreamers discordStreamers = new DiscordStreamers(Arrays.asList(discordStreamsNotifier, discordStreamsRoles));
-
-        StreamsStartupTask streamsStartupTask = new StreamsStartupTask(new DiscordStreamsCoordinator(jda, discordStreamers));
-        streamsStartupTask.doTask();
-
-        return new AppReady(jda, discordStreamers, isReady);
+    public AppInit(AppReadyImpl appReadyImpl, StreamsStartupTask streamsStartupTask, ShutdownTask shutdownTask, JDA jda,
+                   DiscordStreamsEventListener discordStreamsEventListener, DiscordGuildCommandListener discordGuildCommandListener, TwitchBroadcastTask twitchBroadcastTask) {
+        this.appReadyImpl = appReadyImpl;
+        this.streamsStartupTask = streamsStartupTask;
+        this.jda = jda;
+        this.shutdownTask = shutdownTask;
+        this.twitchBroadcastTask = twitchBroadcastTask;
+        this.discordGuildCommandListener = discordGuildCommandListener;
+        this.discordStreamsEventListener = discordStreamsEventListener;
     }
 
-    private JDA createJDA() throws Exception  {
-        String token = System.getenv().get(DISCORD_BOT_TOKEN_PROPERTY_NAME);
-        if (token == null || token.isEmpty()) {
-            throw new IllegalArgumentException("Missing discord token.");
-        }
-        // Startup JDA.
-        return new JDABuilder(AccountType.BOT)
-                .setToken(token)
-                .setStatus(OnlineStatus.ONLINE)
-                .setActivity(Activity.watching("Wannabe's streaming"))
-                .setEnableShutdownHook(false)
-                .build();
+    public AppReady init() throws Exception {
+        this.streamsStartupTask.doTask();
+        Runtime.getRuntime().addShutdownHook(this.shutdownTask);
+
+        Timer tasksTimer = new Timer();
+        tasksTimer.schedule(this.twitchBroadcastTask, 0, 30*1000);
+
+        this.jda.addEventListener(this.discordGuildCommandListener, this.discordStreamsEventListener);
+
+        return this.appReadyImpl;
     }
 }

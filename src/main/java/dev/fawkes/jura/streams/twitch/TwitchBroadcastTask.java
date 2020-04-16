@@ -20,21 +20,20 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import static dev.fawkes.jura.streams.Streams.NOTIFICATION_CHANNEL_ID_PROPERTY_NAME;
-import static dev.fawkes.jura.streams.Streams.NOTIFICATION_ROLE_MENTION_ID_PROPERTY_NAME;
-
 // TODO refactor to similar manor as Discord streams.
 @Slf4j
+@Component
 public class TwitchBroadcastTask extends TimerTask {
 
     private static MessageEmbed getTwitchStreamStartedMessage(String user, String iconURL, String title, String avatarUrl, String discordUser) {
@@ -56,13 +55,11 @@ public class TwitchBroadcastTask extends TimerTask {
         return embedBuilder.build();
     }
 
-    private static final String TWITCH_CLIENT_ID_PROP_NAME = "fawkes.discord.twitch.clientid";
-    private static final String TWITCH_USERS_LOGINS_PROP_NAME = "fawkes.discord.twitch.users";
     private static final String TWITCH_STREAMS_API = "https://api.twitch.tv/helix/streams";
     private static final String TWITCH_STREAMS_USERS_LOGIN_QUERY_PARAM = "user_login";
     private static final String TWITCH_CLIENT_ID_HEADER_NAME = "Client-ID";
 
-    private final String twitchClientID = System.getenv().get(TWITCH_CLIENT_ID_PROP_NAME);
+    private final String twitchClientID;
     private final Map<String, String> twitchUserDiscordIDs = new HashMap<>();
 
     private Map<String, TwitchBroadcast> twitchUserBroadcasts = new HashMap<>();
@@ -73,12 +70,22 @@ public class TwitchBroadcastTask extends TimerTask {
     private final TextChannel notificationChannel;
     private final String notificationMention;
 
-    @Autowired
-    private RestTemplate restTemplate = new RestTemplateBuilder().build();
+    private RestTemplate restTemplate;
 
-    public TwitchBroadcastTask(JDA jda) {
+    private final String streamStartRoleMentionID;
+    private final String streamChannelID;
+
+    public TwitchBroadcastTask(JDA jda,
+                               @Value("${fawkes.discord.notify.role}") String streamStartRoleMentionID,
+                               @Value("${fawkes.discord.notify.channel}") String streamChannelID,
+                               @Value("${fawkes.discord.twitch.clientid}") String clientID,
+                               @Value("${fawkes.discord.twitch.users}") String twitchUsers) {
+        this.twitchClientID = clientID;
+        this.streamStartRoleMentionID = streamStartRoleMentionID;
+        this.streamChannelID = streamChannelID;
+        this.restTemplate = new RestTemplateBuilder().build();
         // Take the twitchLogin#discordIDs from the env and split them into a map for use later.
-        List<String> twitchDiscordPairs = Arrays.asList(System.getenv().get(TWITCH_USERS_LOGINS_PROP_NAME).split(","));
+        List<String> twitchDiscordPairs = Arrays.asList(twitchUsers.split(","));
         for (String twitchDiscordPair : twitchDiscordPairs) {
             String[] userPair = twitchDiscordPair.split("#");
             this.twitchUserDiscordIDs.put(userPair[0], userPair[1]);
@@ -89,8 +96,8 @@ public class TwitchBroadcastTask extends TimerTask {
             this.twitchUserBroadcasts.put(twitchUser, null);
         }
         this.jda = jda;
-        this.notificationChannel = this.jda.getTextChannelById(System.getenv().get(NOTIFICATION_CHANNEL_ID_PROPERTY_NAME));
-        this.notificationMention = this.jda.getRoleById(System.getenv().get(NOTIFICATION_ROLE_MENTION_ID_PROPERTY_NAME)).getAsMention();
+        this.notificationChannel = this.jda.getTextChannelById(this.streamChannelID);
+        this.notificationMention = this.jda.getRoleById(this.streamStartRoleMentionID).getAsMention();
     }
 
     @Override

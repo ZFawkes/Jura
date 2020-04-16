@@ -5,16 +5,19 @@ import dev.fawkes.jura.app.AppInit;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
-import org.springframework.web.client.RestTemplate;
 
 /**
  * main()
  */
 @SpringBootApplication
 public class JuraApplication {
+
+    private final AppInit appInit;
+
+    public JuraApplication(AppInit appInit) {
+        this.appInit = appInit;
+    }
 
     public static void main(String[] args) {
         SpringApplication.run(JuraApplication.class, args);
@@ -34,11 +37,6 @@ public class JuraApplication {
 
     @EventListener(ApplicationStartedEvent.class)
     public void run() throws Exception {
-        new AppInit().init().start();
-    }
-
-    @Bean
-    public RestTemplate restTemplate(RestTemplateBuilder builder) {
-        return builder.build();
+        this.appInit.init().ready();
     }
 }

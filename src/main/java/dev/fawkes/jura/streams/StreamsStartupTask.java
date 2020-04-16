@@ -1,18 +1,18 @@
 package dev.fawkes.jura.streams;
 
-import dev.fawkes.jura.StartupTask;
 import dev.fawkes.jura.streams.discord.DiscordStreamsCoordinator;
 
+import org.springframework.stereotype.Component;
 
-public class StreamsStartupTask implements StartupTask {
+@Component
+public class StreamsStartupTask {
 
-    private DiscordStreamsCoordinator discordStreamsCoordinator;
+    private final DiscordStreamsCoordinator discordStreamsCoordinator;
 
     public StreamsStartupTask(DiscordStreamsCoordinator discordStreamsCoordinator) {
         this.discordStreamsCoordinator = discordStreamsCoordinator;
     }
 
-    @Override
     public void doTask() {
         this.discordStreamsCoordinator.setStreamers();
     }

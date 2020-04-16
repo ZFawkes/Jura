@@ -5,14 +5,19 @@ import java.awt.Color;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 @Slf4j
+@Component
 public class ShutdownTask extends Thread {
 
     private JDA jda;
+
+    @Value("${fawkes.discord.dev.channel}")
     private String devChannelID;
 
-    public ShutdownTask(JDA jda, String devChannelID) {
+    public ShutdownTask(JDA jda, @Value("${fawkes.discord.dev.channel}") String devChannelID) {
         this.jda = jda;
         this.devChannelID = devChannelID;
     }
