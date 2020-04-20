@@ -14,6 +14,6 @@ public class StreamsStartupTask {
     }
 
     public void doTask() {
-        this.discordStreamsCoordinator.setStreamers();
+        this.discordStreamsCoordinator.syncDiscordStreamers();
     }
 }

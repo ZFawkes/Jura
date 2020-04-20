@@ -16,17 +16,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DiscordStreamsNotifier implements DiscordStreamsListener {
+public class DiscordStreamsNotifier implements DiscordStreamsListener, DiscordStreamsSyncListener {
 
     private final TextChannel streamNotificationChannel;
     private final String streamNotificationMention;
     private final JDA jda;
-    private final AtomicBoolean ready;
+    private final AtomicBoolean isSuppressed = new AtomicBoolean(false);
 
     private final String roleMentionID;
     private final String streamNotificationChannelID;
 
-    public DiscordStreamsNotifier(JDA jda, AtomicBoolean ready, @Value("${fawkes.discord.notify.role}") String roleMentionID, @Value("${fawkes.discord.notify.channel}") String streamNotificationChannelID) {
+    public DiscordStreamsNotifier(JDA jda, @Value("${fawkes.discord.notify.role}") String roleMentionID, @Value("${fawkes.discord.notify.channel}") String streamNotificationChannelID) {
         this.jda = jda;
         this.roleMentionID = roleMentionID;
         this.streamNotificationChannelID = streamNotificationChannelID;
@@ -39,12 +39,11 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
         if (this.streamNotificationChannel == null) {
             throw new IllegalStateException("Could not get stream notification channel.");
         }
-        this.ready = ready;
     }
 
     @Override
     public void onStreamStart(DiscordStreamer streamer) {
-        if (this.ready.get()) {
+        if (!this.isSuppressed.get()) {
             User user = this.jda.getUserById(streamer.getUserID());
             MessageEmbed embedMessage = getDiscordStreamStartedMessage(user, ":loud_sound: " + streamer.getStreamChannelName());
 
@@ -62,7 +61,7 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
 
     @Override
     public void onStreamEnd(DiscordStreamer streamer) {
-        if (this.ready.get()) {
+        if (!this.isSuppressed.get()) {
             String user = this.jda.getUserById(streamer.getUserID()).getName();
             String streamDuration;
             if (streamer.getStreamStartTime() != null ) {
@@ -75,7 +74,6 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
             this.streamNotificationChannel.sendMessage(embedMessage).complete();
         }
     }
-
 
     private static MessageEmbed getDiscordStreamStartedMessage(User user, String channel) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
@@ -120,5 +118,15 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
         }
         return durationText;
 
+    }
+
+    @Override
+    public void onSyncStart() {
+        this.isSuppressed.set(true);
+    }
+
+    @Override
+    public void onSyncEnd() {
+        this.isSuppressed.set(false);
     }
 }

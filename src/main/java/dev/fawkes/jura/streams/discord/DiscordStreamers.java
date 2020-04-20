@@ -1,6 +1,5 @@
 package dev.fawkes.jura.streams.discord;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -28,13 +27,9 @@ public class DiscordStreamers {
         }
     }
 
-    public void removeStreamer(DiscordStreamer streamer, boolean force) {
+    public void removeStreamer(DiscordStreamer streamer) {
         DiscordStreamer streamerRemoved = this.streamers.remove(streamer.getUserID());
-        if (force) {
-            for (DiscordStreamsListener listener : this.discordStreamsListeners) {
-                listener.onStreamEnd(streamer);
-            }
-        } else {
+        if (streamerRemoved != null) {
             for (DiscordStreamsListener listener : this.discordStreamsListeners) {
                 listener.onStreamEnd(streamerRemoved);
             }
@@ -42,13 +37,8 @@ public class DiscordStreamers {
     }
 
     public void removeStreamer(Long userID) {
-        DiscordStreamer streamer = new DiscordStreamer();
-        streamer.setUserID(userID);
-        removeStreamer(streamer, false);
+        DiscordStreamer discordStreamer = new DiscordStreamer();
+        discordStreamer.setUserID(userID);
+        removeStreamer(discordStreamer);
     }
-
-    public HashMap<Long, DiscordStreamer> getStreamers() {
-        return new HashMap<>(this.streamers);
-    }
-
 }
