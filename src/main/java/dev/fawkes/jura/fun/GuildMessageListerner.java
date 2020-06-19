@@ -16,7 +16,7 @@ public class GuildMessageListerner extends ListenerAdapter {
             }
 
             if(event.getAuthor().getId().equals("239813487700869121") /* Nawa*/) {
-                Emote emote = event.getJDA().getEmoteById("723476118795190352");
+                Emote emote = event.getJDA().getEmoteById("675428043925356565");
                 event.getMessage().addReaction(emote).queue();
             }
     }
