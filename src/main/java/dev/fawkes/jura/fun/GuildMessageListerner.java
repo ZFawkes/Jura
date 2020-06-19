@@ -13,7 +13,8 @@ public class GuildMessageListerner extends ListenerAdapter {
         if (!event.getAuthor().isBot()) {
             if (!event.getMessage().getMentionedMembers().isEmpty() || !event.getMessage().getMentionedRoles().isEmpty()) {
                 System.out.println("Reaction ID: " + REACTION_ID);
-                Emote emote = event.getGuild().getEmoteById(REACTION_ID);
+                Emote emote = event.getJDA().getEmoteById(REACTION_ID);
+                System.out.println("Emote: " + emote);
                 event.getMessage().addReaction(emote).queue();
             }
         }
