@@ -9,6 +9,7 @@ import dev.fawkes.jura.command.CommandFactory;
 import dev.fawkes.jura.command.DiscordGuildCommandListener;
 import dev.fawkes.jura.dev.DevStartupTask;
 import dev.fawkes.jura.dev.ShutdownTask;
+import dev.fawkes.jura.fun.GuildMessageListerner;
 import dev.fawkes.jura.streams.StreamsStartupTask;
 import dev.fawkes.jura.streams.discord.DiscordStreamers;
 import dev.fawkes.jura.streams.discord.DiscordStreamsCoordinator;
@@ -69,9 +70,11 @@ public class FawkesApplicationRunner implements ApplicationRunner {
 
         Runtime.getRuntime().addShutdownHook(new ShutdownTask(jda, System.getenv().get(DEV_CHANNEL_PROP_NAME)));
 
-        // Run twitch task every 30s (first run now.)
-        Timer tasksTimer = new Timer();
-        tasksTimer.schedule(new TwitchBroadcastTask(jda), 0, 30*1000);
+        /*
+         * Disabling twitch until new API is sorted.
+         */
+        //Timer tasksTimer = new Timer();
+        //tasksTimer.schedule(new TwitchBroadcastTask(jda), 0, 30*1000);
 
         StreamsStartupTask streamsStartupTask = new StreamsStartupTask(new DiscordStreamsCoordinator(jda, discordStreamers));
         DevStartupTask devStartupTask = new DevStartupTask(jda,  System.getenv().get(DEV_CHANNEL_PROP_NAME));
@@ -84,7 +87,8 @@ public class FawkesApplicationRunner implements ApplicationRunner {
 
         this.ready.set(true);
         // Make sure everything is setup before responding to events
-        jda.addEventListener(discordStreamsEventListener, discordGuildCommandListener);
+        GuildMessageListerner guildMessageListerner = new GuildMessageListerner();
+        jda.addEventListener(guildMessageListerner, discordStreamsEventListener, discordGuildCommandListener);
 
         // Keep app alive.
         new Thread("Keep Alive") {
