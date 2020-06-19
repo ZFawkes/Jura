@@ -11,9 +11,12 @@ public class GuildMessageListerner extends ListenerAdapter {
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
             if (!event.getMessage().getMentionedMembers().isEmpty() || !event.getMessage().getMentionedRoles().isEmpty()) {
-                System.out.println("Reaction ID: " + REACTION_ID);
                 Emote emote = event.getJDA().getEmoteById(REACTION_ID);
-                System.out.println("Emote: " + emote);
+                event.getMessage().addReaction(emote).queue();
+            }
+
+            if(event.getAuthor().getId().equals("239813487700869121") /* Nawa*/) {
+                Emote emote = event.getJDA().getEmoteById("723476118795190352");
                 event.getMessage().addReaction(emote).queue();
             }
     }
