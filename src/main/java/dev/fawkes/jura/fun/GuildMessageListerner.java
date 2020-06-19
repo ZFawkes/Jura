@@ -10,13 +10,11 @@ public class GuildMessageListerner extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-        if (!event.getAuthor().isBot()) {
             if (!event.getMessage().getMentionedMembers().isEmpty() || !event.getMessage().getMentionedRoles().isEmpty()) {
                 System.out.println("Reaction ID: " + REACTION_ID);
                 Emote emote = event.getJDA().getEmoteById(REACTION_ID);
                 System.out.println("Emote: " + emote);
                 event.getMessage().addReaction(emote).queue();
             }
-        }
     }
 }
