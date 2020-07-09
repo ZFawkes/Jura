@@ -87,8 +87,8 @@ public class FawkesApplicationRunner implements ApplicationRunner {
 
         this.ready.set(true);
         // Make sure everything is setup before responding to events
-        GuildMessageListerner guildMessageListerner = new GuildMessageListerner();
-        jda.addEventListener(guildMessageListerner, discordStreamsEventListener, discordGuildCommandListener);
+        //GuildMessageListerner guildMessageListerner = new GuildMessageListerner();
+        jda.addEventListener(/*guildMessageListerner, */discordStreamsEventListener, discordGuildCommandListener);
 
         // Keep app alive.
         new Thread("Keep Alive") {
