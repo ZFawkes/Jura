@@ -1,5 +1,8 @@
 package dev.fawkes.jura.dst;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,9 +21,24 @@ public class DSTCommand implements Command {
 
     @Override
     public void doCommand(GuildMessageReceivedEvent event) {
+
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            Map<String, Object> data = objectMapper.readValue(new URL(GIST_URL), LinkedHashMap.class);
+            URL url = new URL(GIST_URL);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            con.setConnectTimeout(5000);
+            con.setReadTimeout(5000);
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuffer content = new StringBuffer();
+            while ((inputLine = in.readLine()) != null) {
+                content.append(inputLine);
+            }
+            in.close();
+            con.disconnect();
+
+            Map<String, Object> data = objectMapper.readValue(content.toString(), LinkedHashMap.class);
 
             event.getChannel().sendMessage(getMessage(data)).queue();
 
