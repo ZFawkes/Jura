@@ -24,21 +24,10 @@ public class DSTCommand implements Command {
 
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            URL url = new URL(GIST_URL);
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
-            con.setConnectTimeout(5000);
-            con.setReadTimeout(5000);
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            String inputLine;
-            StringBuffer content = new StringBuffer();
-            while ((inputLine = in.readLine()) != null) {
-                content.append(inputLine);
-            }
-            in.close();
-            con.disconnect();
 
-            Map<String, Object> data = objectMapper.readValue(content.toString(), LinkedHashMap.class);
+            Map<String, Map<String, Map>> gist = objectMapper.readValue(new URL(GIST_URL), LinkedHashMap.class);
+            String content = (String) gist.get("files").get("game_latest").get("content");
+            Map<String, Object> data = objectMapper.readValue(content, LinkedHashMap.class);
 
             event.getChannel().sendMessage(getMessage(data)).queue();
 
