@@ -2,21 +2,18 @@ package dev.fawkes.jura;
 
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.Timer;
 import java.util.concurrent.atomic.AtomicReference;
 
 import dev.fawkes.jura.command.CommandFactory;
 import dev.fawkes.jura.command.DiscordGuildCommandListener;
 import dev.fawkes.jura.dev.DevStartupTask;
 import dev.fawkes.jura.dev.ShutdownTask;
-import dev.fawkes.jura.fun.GuildMessageListerner;
 import dev.fawkes.jura.streams.StreamsStartupTask;
 import dev.fawkes.jura.streams.discord.DiscordStreamers;
 import dev.fawkes.jura.streams.discord.DiscordStreamsCoordinator;
 import dev.fawkes.jura.streams.discord.DiscordStreamsEventListener;
 import dev.fawkes.jura.streams.discord.DiscordStreamsNotifier;
 import dev.fawkes.jura.streams.discord.DiscordStreamsRoles;
-import dev.fawkes.jura.streams.twitch.TwitchBroadcastTask;
 
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.AccountType;
@@ -66,7 +63,7 @@ public class FawkesApplicationRunner implements ApplicationRunner {
         DiscordStreamsRoles discordStreamsRoles = new DiscordStreamsRoles(jda);
         DiscordStreamers discordStreamers = new DiscordStreamers(Arrays.asList(discordStreamsNotifier, discordStreamsRoles));
         DiscordStreamsEventListener discordStreamsEventListener = new DiscordStreamsEventListener(discordStreamers);
-        DiscordGuildCommandListener discordGuildCommandListener = new DiscordGuildCommandListener(new CommandFactory());
+        DiscordGuildCommandListener discordGuildCommandListener = new DiscordGuildCommandListener(new CommandFactory(), jda.getSelfUser().getId());
 
         Runtime.getRuntime().addShutdownHook(new ShutdownTask(jda, System.getenv().get(DEV_CHANNEL_PROP_NAME)));
 
@@ -87,8 +84,7 @@ public class FawkesApplicationRunner implements ApplicationRunner {
 
         this.ready.set(true);
         // Make sure everything is setup before responding to events
-        //GuildMessageListerner guildMessageListerner = new GuildMessageListerner();
-        jda.addEventListener(/*guildMessageListerner, */discordStreamsEventListener, discordGuildCommandListener);
+        jda.addEventListener(discordStreamsEventListener, discordGuildCommandListener);
 
         // Keep app alive.
         new Thread("Keep Alive") {

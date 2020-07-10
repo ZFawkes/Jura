@@ -1,19 +1,20 @@
 package dev.fawkes.jura.command;
 
 import dev.fawkes.jura.dev.PingCommand;
+import dev.fawkes.jura.dst.DSTCommand;
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 public class CommandFactory {
 
-    public Command getCommand(GuildMessageReceivedEvent event) {
+    Command getCommand(GuildMessageReceivedEvent event, String[] message) {
 
-        if (!event.getAuthor().isBot()) {
-            String[] messageParts = event.getMessage().getContentRaw().split(" ");
-            if (messageParts.length > 1 && messageParts[0].equals("<@!" + event.getJDA().getSelfUser().getIdLong() + ">")) {
-                switch (messageParts[1]) {
-                    case "ping" : return new PingCommand();
-                }
+        if (!event.getAuthor().isBot() && message.length > 1) {
+            switch (message[1]) {
+                case "ping":
+                    return new PingCommand();
+                case "dst":
+                    return new DSTCommand();
             }
         }
         return null;
