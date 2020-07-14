@@ -70,7 +70,7 @@ public class DSTCommand implements Command {
 
         String world = "> Day " + data.get("day") + " [" + data.get("phase") + "] - " + String.format("%.2f", (Double) data.get("temperature"));
         String weatherData = (String) data.get("weather");
-        String weather = weatherData.equals("rain") ? ":cloud_rain" : weatherData.equals("snow") ? ":cloud_snow:" : ":white_sun_small_cloud: ";
+        String weather = weatherData.equals("rain") ? ":cloud_rain:" : weatherData.equals("snow") ? ":cloud_snow:" : ":white_sun_small_cloud:";
         world = world + " " + weather + "\n";
 
         world += " > " + data.get("season") + ", " + data.get("remainingdaysinseason") + " days(s) remaining\n";
