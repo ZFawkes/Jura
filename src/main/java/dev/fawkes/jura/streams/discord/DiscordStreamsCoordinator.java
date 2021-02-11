@@ -1,8 +1,5 @@
 package dev.fawkes.jura.streams.discord;
 
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;

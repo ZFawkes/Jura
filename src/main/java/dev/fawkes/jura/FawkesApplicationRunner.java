@@ -47,8 +47,7 @@ public class FawkesApplicationRunner implements ApplicationRunner {
             throw new IllegalArgumentException("Missing discord token.");
         }
         // Startup JDA.
-        JDA jda = new JDABuilder(AccountType.BOT)
-                .setToken(token)
+        JDA jda = JDABuilder.createDefault(token)
                 .setStatus(OnlineStatus.ONLINE)
                 .setActivity(Activity.watching("Wannabe's streaming"))
                 .setEnableShutdownHook(false)
