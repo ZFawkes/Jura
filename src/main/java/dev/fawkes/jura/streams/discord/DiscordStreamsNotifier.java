@@ -58,7 +58,7 @@ public class DiscordStreamsNotifier implements DiscordStreamsListener {
     @Override
     public void onStreamEnd(DiscordStreamer streamer) {
         if (this.ready.get()) {
-            String user = this.jda.getUserById(streamer.getUserID()).getName();
+            String user = this.jda.retrieveUserById(streamer.getUserID()).complete().getName();
             String streamDuration;
             if (streamer.getStreamStartTime() != null ) {
                 streamDuration = streamDuration(System.currentTimeMillis() - streamer.getStreamStartTime());
